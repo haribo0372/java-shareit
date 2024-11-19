@@ -34,7 +34,7 @@ public class ItemController {
 
     @GetMapping("/search")
     public Collection<ItemDto> searchByNameAndDescription(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                          @RequestParam("text") String text){
+                                                          @RequestParam("text") String text) {
         return ItemMapper.toItemDto(itemService.searchByNameAndDescription(userId, text));
     }
 

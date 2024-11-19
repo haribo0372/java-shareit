@@ -27,7 +27,7 @@ public class Item extends BaseModel {
         this.request = request;
     }
 
-    public boolean isAvailable(){
+    public boolean isAvailable() {
         return status == ItemStatus.AVAILABLE;
     }
 }

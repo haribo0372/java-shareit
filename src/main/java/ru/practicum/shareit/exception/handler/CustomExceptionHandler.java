@@ -61,7 +61,7 @@ public class CustomExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private void loggingErrorResponse(ErrorResponse errorResponse){
+    private void loggingErrorResponse(ErrorResponse errorResponse) {
         log.warn("Ошибка: {}", errorResponse);
     }
 }

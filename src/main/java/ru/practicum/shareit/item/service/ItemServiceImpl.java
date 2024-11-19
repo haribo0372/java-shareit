@@ -65,7 +65,7 @@ public class ItemServiceImpl extends BaseInMemoryService<Item> implements ItemSe
 
         foundItemsByDescription.addAll(foundItemsByName);
         log.debug("Все Item's, принадлежащие пользователю User{id={}} и имеющие подстроку {} " +
-                        "в поле name или description успешно найдены", userId, text);
+                "в поле name или description успешно найдены", userId, text);
 
         return foundItemsByDescription;
     }

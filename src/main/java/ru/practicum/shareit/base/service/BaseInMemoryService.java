@@ -16,7 +16,7 @@ public abstract class BaseInMemoryService<T extends BaseModel> implements BaseSe
     private final HashMap<Long, T> storage;
     private Class<T> type;
 
-    protected BaseInMemoryService(Class<T> type){
+    protected BaseInMemoryService(Class<T> type) {
         this.generatorId = 0L;
         this.storage = new HashMap<>();
         this.type = type;
