@@ -13,6 +13,8 @@ public interface ItemService extends BaseService<Item, Long> {
 
     ItemDto update(Long userId, Long itemId, RequestUpdateItemDto item);
 
+    ItemDto findItemById(Long itemId);
+
     Collection<ItemDto> findAllItemsByUserId(Long userId);
 
     Collection<ItemDto> searchByNameAndDescription(Long userId, String text);

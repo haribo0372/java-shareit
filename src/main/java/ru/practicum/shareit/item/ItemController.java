@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.RequestCreateItemDto;
 import ru.practicum.shareit.item.dto.RequestUpdateItemDto;
-import ru.practicum.shareit.item.dto.mapper.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.Collection;
@@ -28,8 +26,7 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemDto findById(@PathVariable Long itemId) {
-        Item foundItem = itemService.findById(itemId);
-        return ItemMapper.toItemDto(foundItem);
+        return itemService.findItemById(itemId);
     }
 
     @GetMapping("/search")

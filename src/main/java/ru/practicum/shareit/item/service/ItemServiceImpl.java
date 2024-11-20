@@ -51,6 +51,11 @@ public class ItemServiceImpl extends BaseInMemoryService<Item> implements ItemSe
     }
 
     @Override
+    public ItemDto findItemById(Long itemId) {
+        return this.toDto(this.findById(itemId));
+    }
+
+    @Override
     public Collection<ItemDto> findAllItemsByUserId(Long userId) {
         List<ItemDto> foundItems = super.findAll().stream()
                 .filter(item -> item.getOwner().getId().equals(userId))
