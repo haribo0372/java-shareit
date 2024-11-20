@@ -5,15 +5,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.base.service.BaseInMemoryService;
 import ru.practicum.shareit.exception.AccessDeniedException;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.RequestCreateItemDto;
+import ru.practicum.shareit.item.dto.RequestUpdateItemDto;
+import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 
@@ -29,7 +31,8 @@ public class ItemServiceImpl extends BaseInMemoryService<Item> implements ItemSe
     }
 
     @Override
-    public Item update(Long userId, Item item) {
+    public ItemDto update(Long userId, Long itemId, RequestUpdateItemDto itemDto) {
+        Item item = ItemMapper.fromDto(itemId, itemDto);
         User user = userService.findById(userId);
         Item storageItem = super.findById(item.getId());
         if (!storageItem.getOwner().equals(user))
@@ -44,42 +47,45 @@ public class ItemServiceImpl extends BaseInMemoryService<Item> implements ItemSe
         }
 
         log.info("Item{id={}} у User{id={}} успешно обновлен", storageItem.getId(), userId);
-        return storageItem;
+        return this.toDto(storageItem);
     }
 
     @Override
-    public Collection<Item> findAllItemsByUserId(Long userId) {
-        List<Item> foundItems = super.findAll().stream()
+    public Collection<ItemDto> findAllItemsByUserId(Long userId) {
+        List<ItemDto> foundItems = super.findAll().stream()
                 .filter(item -> item.getOwner().getId().equals(userId))
+                .map(this::toDto)
                 .toList();
         log.debug("Все Item, принадлежающие пользователю User{id{}} успешно найдены", userId);
         return foundItems;
     }
 
     @Override
-    public Collection<Item> searchByNameAndDescription(Long userId, String text) {
-        Set<Item> foundItemsByName = this.search(userId,
-                item -> item.getName().toLowerCase().contains(text.toLowerCase()) && item.isAvailable());
-        Set<Item> foundItemsByDescription = this.search(userId,
-                item -> item.getDescription().toLowerCase().contains(text.toLowerCase()) && item.isAvailable());
+    public Collection<ItemDto> searchByNameAndDescription(Long userId, String text) {
+        Collection<ItemDto> foundItems = this.search(userId,
+                itemDto -> (itemDto.getName().toLowerCase().contains(text.toLowerCase()) ||
+                        itemDto.getDescription().toLowerCase().contains(text.toLowerCase())) && itemDto.getStatus());
 
-        foundItemsByDescription.addAll(foundItemsByName);
         log.debug("Все Item's, принадлежащие пользователю User{id={}} и имеющие подстроку {} " +
                 "в поле name или description успешно найдены", userId, text);
-
-        return foundItemsByDescription;
+        return foundItems;
     }
 
     @Override
-    public Item create(Long userId, Item item) {
+    public ItemDto create(Long userId, RequestCreateItemDto requestItemDto) {
+        Item item = ItemMapper.fromDto(requestItemDto);
         User foundUser = userService.findById(userId);
         item.setOwner(foundUser);
         Item savedItem = super.save(item);
         log.info("Item{id={}} успешно сохранен у пользователя User{id={}}", savedItem.getId(), userId);
-        return savedItem;
+        return this.toDto(savedItem);
     }
 
-    private Set<Item> search(Long userId, Predicate<Item> predicate) {
-        return findAllItemsByUserId(userId).stream().filter(predicate).collect(Collectors.toSet());
+    private Collection<ItemDto> search(Long userId, Predicate<ItemDto> predicate) {
+        return findAllItemsByUserId(userId).stream().filter(predicate).toList();
+    }
+
+    private ItemDto toDto(Item item){
+        return ItemMapper.toItemDto(item);
     }
 }

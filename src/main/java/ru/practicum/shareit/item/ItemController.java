@@ -23,7 +23,7 @@ public class ItemController {
 
     @GetMapping
     public Collection<ItemDto> findAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return ItemMapper.toItemDto(itemService.findAllItemsByUserId(userId));
+        return itemService.findAllItemsByUserId(userId);
     }
 
     @GetMapping("/{itemId}")
@@ -35,22 +35,20 @@ public class ItemController {
     @GetMapping("/search")
     public Collection<ItemDto> searchByNameAndDescription(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                           @RequestParam("text") String text) {
-        return ItemMapper.toItemDto(itemService.searchByNameAndDescription(userId, text));
+        return itemService.searchByNameAndDescription(userId, text);
     }
 
     @PostMapping
     public ItemDto create(@RequestHeader("X-Sharer-User-Id") Long userId,
                           @Valid @RequestBody RequestCreateItemDto itemDto) {
-        Item createdItem = itemService.create(userId, ItemMapper.fromDto(itemDto));
-        return ItemMapper.toItemDto(createdItem);
+        return itemService.create(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestHeader("X-Sharer-User-Id") Long userId,
                           @PathVariable Long itemId,
                           @Valid @RequestBody RequestUpdateItemDto itemDto) {
-        Item createdItem = itemService.update(userId, ItemMapper.fromDto(itemId, itemDto));
-        return ItemMapper.toItemDto(createdItem);
+        return itemService.update(userId, itemId, itemDto);
     }
 
     @DeleteMapping("/{itemId}")

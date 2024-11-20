@@ -4,8 +4,13 @@ import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.base.service.BaseInMemoryService;
+import ru.practicum.shareit.user.dto.RequestCreateUserDto;
+import ru.practicum.shareit.user.dto.RequestUpdateUserDto;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
+import java.util.Collection;
 import java.util.Optional;
 
 @Slf4j
@@ -16,15 +21,17 @@ public class UserServiceImpl extends BaseInMemoryService<User> implements UserSe
     }
 
     @Override
-    public User create(User user) {
+    public UserDto create(RequestCreateUserDto userDto) {
+        User user = UserMapper.fromDto(userDto);
         checkingValidationEmail(user);
         User savedUser = super.save(user);
         log.info("User{id={}} успешно сохранен", savedUser.getId());
-        return savedUser;
+        return this.toDto(savedUser);
     }
 
     @Override
-    public User update(User user) {
+    public UserDto update(Long userId, RequestUpdateUserDto userDto) {
+        User user = UserMapper.fromDto(userId, userDto);
         User storageUser = super.findById(user.getId());
 
         if (user.getName() != null && !user.getName().isBlank())
@@ -35,16 +42,35 @@ public class UserServiceImpl extends BaseInMemoryService<User> implements UserSe
         }
         log.info("User{id={}} успешно обновлен", storageUser.getId());
 
-        return storageUser;
+        return this.toDto(storageUser);
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
-        return super.findAll().stream().filter(user -> user.getEmail().equals(email)).findAny();
+    public Optional<UserDto> findByEmail(String email) {
+        Optional<User> anyUser = super.findAll().stream().filter(user -> user.getEmail().equals(email)).findAny();
+        return anyUser.map(this::toDto);
+    }
+
+    @Override
+    public UserDto findUserById(Long id) {
+        return this.toDto(super.findById(id));
+    }
+
+    @Override
+    public Collection<UserDto> getAll() {
+        return this.toDto(super.findAll());
     }
 
     private void checkingValidationEmail(User user) {
         if (findByEmail(user.getEmail()).isPresent())
             throw new ValidationException("Пользователь с таким email уже существует");
+    }
+
+    private UserDto toDto(User user){
+        return UserMapper.toUserDto(user);
+    }
+
+    private Collection<UserDto> toDto(Collection<User> users){
+        return UserMapper.toUserDto(users);
     }
 }
