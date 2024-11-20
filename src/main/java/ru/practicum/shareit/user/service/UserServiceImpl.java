@@ -66,11 +66,11 @@ public class UserServiceImpl extends BaseInMemoryService<User> implements UserSe
             throw new ValidationException("Пользователь с таким email уже существует");
     }
 
-    private UserDto toDto(User user){
+    private UserDto toDto(User user) {
         return UserMapper.toUserDto(user);
     }
 
-    private Collection<UserDto> toDto(Collection<User> users){
+    private Collection<UserDto> toDto(Collection<User> users) {
         return UserMapper.toUserDto(users);
     }
 }

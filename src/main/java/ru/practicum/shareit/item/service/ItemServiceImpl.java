@@ -90,7 +90,7 @@ public class ItemServiceImpl extends BaseInMemoryService<Item> implements ItemSe
         return findAllItemsByUserId(userId).stream().filter(predicate).toList();
     }
 
-    private ItemDto toDto(Item item){
+    private ItemDto toDto(Item item) {
         return ItemMapper.toItemDto(item);
     }
 }

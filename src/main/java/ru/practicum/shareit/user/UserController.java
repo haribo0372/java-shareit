@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.RequestCreateUserDto;
 import ru.practicum.shareit.user.dto.RequestUpdateUserDto;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.mapper.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.util.Collection;
