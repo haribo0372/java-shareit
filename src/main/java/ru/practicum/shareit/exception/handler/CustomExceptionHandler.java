@@ -44,7 +44,7 @@ public class CustomExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(AccessDeniedException ex) {
         ErrorResponse errorResponse = new ErrorResponse("В доступе отказано", ex.getMessage());
         loggingErrorResponse(errorResponse);
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(errorResponse, HttpStatus.valueOf(ex.getStatusCode()));
     }
 
     @ExceptionHandler(ValidationException.class)
@@ -58,6 +58,7 @@ public class CustomExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(Throwable ex) {
         ErrorResponse errorResponse = new ErrorResponse("Произошла непредвиденная ошибка", ex.getMessage());
         log.trace(ex.getMessage());
+        ex.printStackTrace();
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

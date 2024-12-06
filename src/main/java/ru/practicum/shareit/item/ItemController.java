@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.RequestCreateItemDto;
-import ru.practicum.shareit.item.dto.RequestUpdateItemDto;
+import ru.practicum.shareit.item.dto.comment.CommentDto;
+import ru.practicum.shareit.item.dto.comment.RequestCreateCommentDto;
+import ru.practicum.shareit.item.dto.item.ItemDto;
+import ru.practicum.shareit.item.dto.item.RequestCreateItemDto;
+import ru.practicum.shareit.item.dto.item.RequestUpdateItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.Collection;
@@ -49,8 +51,15 @@ public class ItemController {
     }
 
     @DeleteMapping("/{itemId}")
-    public ResponseEntity<Void> deleteById(@RequestParam Long itemId) {
+    public ResponseEntity<Void> deleteById(@PathVariable Long itemId) {
         itemService.deleteById(itemId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addCommentToItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                       @PathVariable Long itemId,
+                                       @Valid @RequestBody RequestCreateCommentDto requestCreateCommentDto) {
+        return itemService.saveCommentToItem(userId, itemId, requestCreateCommentDto);
     }
 }

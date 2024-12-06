@@ -11,7 +11,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 
 @Slf4j
-public abstract class BaseInMemoryService<T extends BaseModel> implements BaseService<T, Long> {
+public abstract class BaseInMemoryService<T extends BaseModel<Long>> implements BaseService<T, Long> {
     private Long generatorId;
     private final HashMap<Long, T> storage;
     private Class<T> type;
