@@ -19,7 +19,7 @@ public interface ItemService extends BaseService<Item, Long> {
 
     Collection<ItemDto> findAllItemsByUserId(Long userId);
 
-    Collection<ItemDto> searchByNameAndDescription(Long userId, String text);
+    Collection<ItemDto> searchByNameAndDescription(String text);
 
     CommentDto saveCommentToItem(Long userId, Long itemId, RequestCreateCommentDto requestCreateCommentDto);
 }

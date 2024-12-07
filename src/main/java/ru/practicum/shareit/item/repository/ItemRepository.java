@@ -19,10 +19,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     @Query("SELECT new ru.practicum.shareit.item.dto.item.ItemDto(" +
             "i.id, i.name, i.description, i.status = 'AVAILABLE', i.request.id) " +
             "FROM Item i " +
-            "WHERE i.owner.id = :ownerId " +
-            "AND (LOWER(i.name) LIKE LOWER(CONCAT('%', :text, '%')) " +
+            "WHERE (LOWER(i.name) LIKE LOWER(CONCAT('%', :text, '%')) " +
             "OR LOWER(i.description) LIKE LOWER(CONCAT('%', :text, '%'))) " +
             "AND i.status = 'AVAILABLE'")
-    List<ItemDto> findFilteredItemsByOwnerId(@Param("ownerId") Long ownerId, @Param("text") String text);
+    List<ItemDto> findFilteredItemsByOwnerId(@Param("text") String text);
 
 }

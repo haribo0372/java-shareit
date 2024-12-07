@@ -32,9 +32,8 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> searchByNameAndDescription(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                          @RequestParam("text") String text) {
-        return itemService.searchByNameAndDescription(userId, text);
+    public Collection<ItemDto> searchByNameAndDescription(@RequestParam("text") String text) {
+        return itemService.searchByNameAndDescription(text);
     }
 
     @PostMapping

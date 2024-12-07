@@ -71,17 +71,29 @@ public class ItemServiceImpl extends BaseInDbService<Item, ItemRepository> imple
     @Override
     public Collection<ItemDto> findAllItemsByUserId(Long userId) {
         List<ItemDto> foundItems = super.repository.findAllByOwnerId(userId);
-        foundItems.forEach(itemDto -> itemDto.setComments(commentRepository.findAllByItemId(itemDto.getId())));
+        foundItems.forEach(itemDto -> {
+            Long itemId = itemDto.getId();
+            itemDto.setComments(commentRepository.findAllByItemId(itemId));
+            LocalDateTime now = LocalDateTime.now();
+            bookingRepository.findNextBookingByItemId(itemId, now)
+                    .ifPresent(booking -> itemDto.setNextBooking(booking.getStartDateTime()));
+            bookingRepository.findLatestBookingByItemId(itemId, now)
+                    .ifPresent(booking -> itemDto.setLastBooking(booking.getEndDateTime()));
+
+        });
         log.debug("Все Item, принадлежающие пользователю User{id{}} успешно найдены", userId);
         return foundItems;
     }
 
     @Override
-    public Collection<ItemDto> searchByNameAndDescription(Long ownerId, String text) {
-        Collection<ItemDto> foundItems = super.repository.findFilteredItemsByOwnerId(ownerId, text);
+    public Collection<ItemDto> searchByNameAndDescription(String text) {
+        if (text == null || text.isBlank())
+            return List.of();
 
-        log.debug("Все Item's, принадлежащие пользователю User{id={}} и имеющие подстроку {} " +
-                "в поле name или description успешно найдены (size={})", ownerId, text, foundItems.size());
+        Collection<ItemDto> foundItems = super.repository.findFilteredItemsByOwnerId(text);
+
+        log.debug("Все Item's, имеющие подстроку {} в поле name или description успешно найдены (size={})",
+                text, foundItems.size());
         return foundItems;
     }
 
