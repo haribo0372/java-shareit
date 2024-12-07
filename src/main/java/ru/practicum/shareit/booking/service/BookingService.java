@@ -17,5 +17,4 @@ public interface BookingService extends BaseService<Booking, Long> {
     Collection<BookingDto> getAllByUserId(Long userId, String state);
 
     Collection<BookingDto> getAllByItemOwnerId(Long userId, String state);
-//    ItemDto update(Long userId, Long itemId, RequestUpdateItemDto item);
 }
