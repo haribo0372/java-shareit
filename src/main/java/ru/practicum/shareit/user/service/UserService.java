@@ -18,5 +18,9 @@ public interface UserService extends BaseService<User, Long> {
 
     UserDto findUserById(Long id);
 
+    void checkExistsById(Long id);
+
+    boolean existsById(Long id);
+
     Collection<UserDto> getAll();
 }

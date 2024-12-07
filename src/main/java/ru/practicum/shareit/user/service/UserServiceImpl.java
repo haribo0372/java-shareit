@@ -2,22 +2,29 @@ package ru.practicum.shareit.user.service;
 
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.base.service.BaseInMemoryService;
+import ru.practicum.shareit.base.service.BaseInDbService;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.RequestCreateUserDto;
 import ru.practicum.shareit.user.dto.RequestUpdateUserDto;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
 import java.util.Optional;
 
+import static java.lang.String.format;
+
 @Slf4j
 @Service
-public class UserServiceImpl extends BaseInMemoryService<User> implements UserService {
-    public UserServiceImpl() {
-        super(User.class);
+public class UserServiceImpl extends BaseInDbService<User, UserRepository> implements UserService {
+
+    @Autowired
+    public UserServiceImpl(UserRepository repository) {
+        super(repository, User.class);
     }
 
     @Override
@@ -40,6 +47,7 @@ public class UserServiceImpl extends BaseInMemoryService<User> implements UserSe
             checkingValidationEmail(user);
             storageUser.setEmail(user.getEmail());
         }
+        super.save(storageUser);
         log.info("User{id={}} успешно обновлен", storageUser.getId());
 
         return this.toDto(storageUser);
@@ -47,7 +55,7 @@ public class UserServiceImpl extends BaseInMemoryService<User> implements UserSe
 
     @Override
     public Optional<UserDto> findByEmail(String email) {
-        Optional<User> anyUser = super.findAll().stream().filter(user -> user.getEmail().equals(email)).findAny();
+        Optional<User> anyUser = repository.findByEmail(email);
         return anyUser.map(this::toDto);
     }
 
@@ -57,12 +65,24 @@ public class UserServiceImpl extends BaseInMemoryService<User> implements UserSe
     }
 
     @Override
+    public void checkExistsById(Long id) {
+        if (!super.repository.existsById(id))
+            throw new NotFoundException(format("User{id=%d} не существует", id));
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return super.repository.existsById(id);
+    }
+
+
+    @Override
     public Collection<UserDto> getAll() {
         return this.toDto(super.findAll());
     }
 
     private void checkingValidationEmail(User user) {
-        if (findByEmail(user.getEmail()).isPresent())
+        if (this.findByEmail(user.getEmail()).isPresent())
             throw new ValidationException("Пользователь с таким email уже существует");
     }
 
