@@ -1,8 +1,9 @@
 package ru.practicum.shareit.item.dto.mapper;
 
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.RequestCreateItemDto;
-import ru.practicum.shareit.item.dto.RequestUpdateItemDto;
+import ru.practicum.shareit.item.dto.comment.CommentDto;
+import ru.practicum.shareit.item.dto.item.ItemDto;
+import ru.practicum.shareit.item.dto.item.RequestCreateItemDto;
+import ru.practicum.shareit.item.dto.item.RequestUpdateItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.util.enums.ItemStatus;
 
@@ -19,8 +20,15 @@ public class ItemMapper {
         );
     }
 
-    public static Collection<ItemDto> toItemDto(Collection<Item> items) {
-        return items.stream().map(ItemMapper::toItemDto).toList();
+    public static ItemDto toItemDto(Item item, Collection<CommentDto> comments) {
+        return new ItemDto(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                fromItemStatusToBoolean(item.getStatus()),
+                item.getRequest() != null ? item.getRequest().getId() : null,
+                comments
+        );
     }
 
     public static Item fromDto(RequestCreateItemDto itemDto) {

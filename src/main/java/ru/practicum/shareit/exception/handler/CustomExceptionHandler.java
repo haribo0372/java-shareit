@@ -44,7 +44,7 @@ public class CustomExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(AccessDeniedException ex) {
         ErrorResponse errorResponse = new ErrorResponse("В доступе отказано", ex.getMessage());
         loggingErrorResponse(errorResponse);
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(errorResponse, HttpStatus.valueOf(ex.getStatusCode()));
     }
 
     @ExceptionHandler(ValidationException.class)
