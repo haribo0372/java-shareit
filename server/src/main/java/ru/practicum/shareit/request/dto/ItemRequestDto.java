@@ -30,8 +30,4 @@ public class ItemRequestDto {
         this.description = description;
         this.created = created;
     }
-
-    public void addResponse(ItemInItemRequestDto itemDto) {
-        responses.add(itemDto);
-    }
 }
