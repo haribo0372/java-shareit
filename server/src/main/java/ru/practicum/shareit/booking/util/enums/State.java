@@ -10,7 +10,6 @@ public enum State {
             try {
                 return State.valueOf(stateString.toUpperCase());
             } catch (IllegalArgumentException e) {
-                // Обработка случая, когда строка не соответствует ни одному элементу перечисления
                 throw new ValidationException(String.format("Нет соответствующего состояния для: %s", stateString));
             }
         }

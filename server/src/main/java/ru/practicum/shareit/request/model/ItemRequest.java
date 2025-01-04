@@ -31,8 +31,4 @@ public class ItemRequest implements BaseModel<Long> {
     @Column(name = "created", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime created;
-
-    public ItemRequest(String description) {
-        this.description = description;
-    }
 }

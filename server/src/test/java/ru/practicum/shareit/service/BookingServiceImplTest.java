@@ -11,6 +11,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.service.BookingServiceImpl;
 import ru.practicum.shareit.booking.util.enums.BookerStatus;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.util.enums.ItemStatus;
@@ -22,7 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 @SpringBootTest
@@ -66,7 +69,7 @@ public class BookingServiceImplTest {
     }
 
     @Test
-    public void getAllByUserId() {
+    public void getAllByUserId_shouldReturnBookings() {
         userRepository.save(owner);
         booker = userRepository.save(booker);
         itemRepository.save(item);
@@ -93,6 +96,21 @@ public class BookingServiceImplTest {
             assertThat(collectionsWithBookingsAreEqual(foundBookings, expectedBookings)).isTrue();
         });
 
+    }
+
+    @Test
+    public void getAllByUserId_shouldThrowValidationException() {
+        userRepository.save(owner);
+        booker = userRepository.save(booker);
+        itemRepository.save(item);
+
+        currentBooking = bookingRepository.save(currentBooking);
+        futureBooking = bookingRepository.save(futureBooking);
+        pastBooking = bookingRepository.save(pastBooking);
+
+        assertThatThrownBy(() -> bookingService.getAllByUserId(booker.getId(), "INVALID_STATE"))
+                .isInstanceOf(ValidationException.class)
+                .hasMessage("Нет соответствующего состояния для: INVALID_STATE");
     }
 
     private boolean collectionsWithBookingsAreEqual(List<BookingDto> bookings1, List<Booking> bookings2) {
