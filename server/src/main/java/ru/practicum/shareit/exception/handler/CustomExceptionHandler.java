@@ -3,35 +3,18 @@ package ru.practicum.shareit.exception.handler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import ru.practicum.shareit.exception.*;
+import ru.practicum.shareit.exception.AccessDeniedException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.UserEmailIsNotUnique;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.exception.model.ErrorResponse;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @ControllerAdvice
 public class CustomExceptionHandler {
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handle(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            log.warn("Ошибка валидации поля \"{}\" : {}", fieldName, errorMessage);
-            errors.put(fieldName, errorMessage);
-        });
-
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handle(NotFoundException ex) {
         ErrorResponse errorResponse = new ErrorResponse("Запрашиваемый ресурс не найден", ex.getMessage());
@@ -39,16 +22,9 @@ public class CustomExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(UserIdMissingException.class)
-    public ResponseEntity<ErrorResponse> handle(UserIdMissingException ex) {
-        ErrorResponse errorResponse = new ErrorResponse("Неверный  запрос", ex.getMessage());
-        loggingErrorResponse(errorResponse);
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ErrorResponse> handle(MissingRequestHeaderException ex) {
-        ErrorResponse errorResponse = new ErrorResponse("Неверный  запрос", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse("Неверный запрос", ex.getMessage());
         loggingErrorResponse(errorResponse);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -76,7 +52,8 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<ErrorResponse> handle(Throwable ex) {
-        ErrorResponse errorResponse = new ErrorResponse("Произошла непредвиденная ошибка", ex.getClass() + " " + ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(
+                "Произошла непредвиденная ошибка", ex.getClass() + " " + ex.getMessage());
         log.trace(ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -147,7 +147,7 @@ public class ItemControllerTest {
     public void createItem_itemShouldBeCreated() throws Exception {
         Long userId = 1L;
         RequestItemDto requestDto = new RequestItemDto("New Item", "New Description", true, null);
-        ItemDto itemDto = new ItemDto(1L, "New Item", "New Description", true, null);
+        ItemDto itemDto = new ItemDto(1L, "New Item", "New Description", true, null, null);
 
         when(itemService.create(eq(userId), any(RequestItemDto.class))).thenReturn(itemDto);
 

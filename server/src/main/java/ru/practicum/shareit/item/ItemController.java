@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exception.UserIdMissingException;
 import ru.practicum.shareit.item.dto.comment.CommentDto;
 import ru.practicum.shareit.item.dto.comment.RequestCreateCommentDto;
 import ru.practicum.shareit.item.dto.item.ItemDto;
@@ -22,7 +21,6 @@ public class ItemController {
 
     @GetMapping
     public Collection<ItemDto> findAllItemsOfUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        validateUserId(userId);
         return itemService.findAllItemsByUserId(userId);
     }
 
@@ -39,7 +37,6 @@ public class ItemController {
     @PostMapping
     public ItemDto create(@RequestHeader("X-Sharer-User-Id") Long userId,
                           @RequestBody RequestItemDto itemDto) {
-        validateUserId(userId);
         return itemService.create(userId, itemDto);
     }
 
@@ -47,7 +44,6 @@ public class ItemController {
     public ItemDto update(@RequestHeader("X-Sharer-User-Id") Long userId,
                           @PathVariable Long itemId,
                           @RequestBody RequestItemDto itemDto) {
-        validateUserId(userId);
         return itemService.update(userId, itemId, itemDto);
     }
 
@@ -61,12 +57,6 @@ public class ItemController {
     public CommentDto addCommentToItem(@RequestHeader("X-Sharer-User-Id") Long userId,
                                        @PathVariable Long itemId,
                                        @RequestBody RequestCreateCommentDto requestCreateCommentDto) {
-        validateUserId(userId);
         return itemService.saveCommentToItem(userId, itemId, requestCreateCommentDto);
-    }
-
-    private void validateUserId(Long userId) {
-        if (userId == null)
-            throw new UserIdMissingException("Заголовок \"X-Sharer-User-Id\" отсутствует");
     }
 }

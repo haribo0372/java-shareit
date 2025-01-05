@@ -15,11 +15,14 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.RequestCreateBookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.util.enums.BookerStatus;
+import ru.practicum.shareit.exception.AccessDeniedException;
+import ru.practicum.shareit.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static java.lang.String.format;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -60,16 +63,13 @@ public class BookingControllerTest {
     }
 
     @Test
-    public void getAllByBookerId_shouldThrowUserIdMissingException() throws Exception {
+    public void getAllByBookerId_shouldReturnBadRequest_whenUserIdNotProvided() throws Exception {
         long userId = 1L;
         when(bookingService.getAllByUserId(eq(userId), anyString())).thenReturn(List.of(responseBookingDto));
 
         mockMvc.perform(get("/bookings")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Неверный  запрос"))
-                .andExpect(jsonPath("$.description").value("Заголовок \"X-Sharer-User-Id\" отсутствует"));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    public void create_shouldThrowUserIdMissingException() throws Exception {
+    public void create_shouldReturnBadRequest_whenUserIdNotProvided() throws Exception {
         long userId = 1L;
         when(bookingService.create(eq(userId), any(RequestCreateBookingDto.class))).thenReturn(responseBookingDto);
 
@@ -94,9 +94,23 @@ public class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestBookingDto)))
                 .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void create_shouldThrowError() throws Exception {
+        long userId = 1L;
+        String exMessage = "Some exception message";
+        when(bookingService.create(eq(userId), any(RequestCreateBookingDto.class)))
+                .thenThrow(new Error(exMessage));
+
+        mockMvc.perform(post("/bookings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", userId)
+                        .content(objectMapper.writeValueAsString(requestBookingDto)))
+                .andExpect(status().is5xxServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Неверный  запрос"))
-                .andExpect(jsonPath("$.description").value("Заголовок \"X-Sharer-User-Id\" отсутствует"));
+                .andExpect(jsonPath("$.error").value("Произошла непредвиденная ошибка"));
     }
 
     @Test
@@ -114,7 +128,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    public void approveBooking_shouldThrowUserIdMissingException() throws Exception {
+    public void approveBooking_shouldReturnBadRequest_whenUserIdNotProvided() throws Exception {
         long userId = 1L;
         long bookingId = 1L;
         when(bookingService.approveBooking(eq(userId), eq(bookingId), any(Boolean.class)))
@@ -123,9 +137,27 @@ public class BookingControllerTest {
         mockMvc.perform(patch("/bookings/" + bookingId)
                         .param("approved", String.valueOf(false)))
                 .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    public void approveBooking_shouldThrowAccessDeniedException() throws Exception {
+        long userId = 1L;
+        long bookingId = 1L;
+        int expectedResponseStatus = 403;
+        String exMessage = format("User{id=%d} не имеет доступа на изменение статуса Booking{id=%d}",
+                userId, bookingId);
+
+        when(bookingService.approveBooking(eq(userId), eq(bookingId), any(Boolean.class)))
+                .thenThrow(new AccessDeniedException(exMessage, expectedResponseStatus));
+
+        mockMvc.perform(patch("/bookings/" + bookingId)
+                        .header("X-Sharer-User-Id", userId)
+                        .param("approved", String.valueOf(false)))
+                .andExpect(status().is(expectedResponseStatus))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Неверный  запрос"))
-                .andExpect(jsonPath("$.description").value("Заголовок \"X-Sharer-User-Id\" отсутствует"));
+                .andExpect(jsonPath("$.error").value("В доступе отказано"))
+                .andExpect(jsonPath("$.description").value(exMessage));
     }
 
     @Test
@@ -142,7 +174,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    public void getById_shouldThrowUserIdMissingException() throws Exception {
+    public void getById_shouldReturnBadRequest_whenUserIdNotProvided() throws Exception {
         long userId = 1L;
         long bookingId = 1L;
         when(bookingService.getBookingById(eq(userId), eq(bookingId)))
@@ -150,10 +182,7 @@ public class BookingControllerTest {
 
 
         mockMvc.perform(get("/bookings/" + bookingId))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Неверный  запрос"))
-                .andExpect(jsonPath("$.description").value("Заголовок \"X-Sharer-User-Id\" отсутствует"));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -174,7 +203,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    public void getAllByItemOwnerId_shouldThrowUserIdMissingException() throws Exception {
+    public void getAllByItemOwnerId_shouldReturnBadRequest_whenUserIdNotProvided() throws Exception {
         long userId = 1L;
 
         when(bookingService.getAllByItemOwnerId(eq(userId), anyString())).thenReturn(List.of(responseBookingDto));
@@ -182,10 +211,25 @@ public class BookingControllerTest {
 
         mockMvc.perform(get("/bookings/owner")
                         .param("state", "all"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void getAllByItemOwnerId_shouldThrowValidationException() throws Exception {
+        long userId = 1L;
+        String state = "INVALID_STATE";
+        String exMessage = String.format("Нет соответствующего состояния для: %s", state);
+        when(bookingService.getAllByItemOwnerId(eq(userId), anyString()))
+                .thenThrow(new ValidationException(exMessage));
+
+
+        mockMvc.perform(get("/bookings/owner")
+                        .header("X-Sharer-User-Id", userId)
+                        .param("state", state))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Неверный  запрос"))
-                .andExpect(jsonPath("$.description").value("Заголовок \"X-Sharer-User-Id\" отсутствует"));
+                .andExpect(jsonPath("$.error").value("Ошибка валидации"))
+                .andExpect(jsonPath("$.description").value(exMessage));
     }
 
     private void checkCorrectnessBooking(ResultActions resultActions, String prefixOfPath, BookingDto expectedBooking) throws Exception {
