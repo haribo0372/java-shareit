@@ -1,41 +1,51 @@
 package ru.practicum.shareit.dto;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.json.JacksonTester;
 import ru.practicum.shareit.item.dto.item.RequestItemDto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JsonTest
-@AutoConfigureMockMvc
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class RequestItemDtoTest {
-    private final ObjectMapper objectMapper;
+
+    @Autowired
+    private JacksonTester<RequestItemDto> json;
 
     @Test
-    void testSerialization() throws Exception {
-        RequestItemDto requestItemDto = new RequestItemDto("Item Name", "Description", true, 1L);
-        String jsonString = objectMapper.writeValueAsString(requestItemDto);
-        assertThat(jsonString).contains(
-                requestItemDto.getName(), requestItemDto.getDescription(),
-                String.valueOf(requestItemDto.getAvailable()),
-                String.valueOf(requestItemDto.getRequestId())
-        );
+    void testSerialize() throws Exception {
+        var dto = new RequestItemDto("item-1", "description-1", true, 1L);
+
+        var result = json.write(dto);
+
+        assertThat(result).hasJsonPath("$.name");
+        assertThat(result).hasJsonPath("$.description");
+        assertThat(result).hasJsonPath("$.available");
+        assertThat(result).hasJsonPath("$.requestId");
+        assertThat(result).extractingJsonPathStringValue("$.name").isEqualTo(dto.getName());
+        assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo(dto.getDescription());
+        assertThat(result).extractingJsonPathBooleanValue("$.available").isEqualTo(dto.getAvailable());
+        assertThat(result).extractingJsonPathNumberValue("$.requestId").isEqualTo(dto.getRequestId().intValue());
     }
 
     @Test
-    void testDeserialization() throws Exception {
-        String jsonString = "{\"name\":\"Item Name\",\"description\":\"Description\",\"available\":true,\"requestId\":1}";
+    void testDeserialize() throws Exception {
+        var jsonContent = """
+                    {
+                        "name": "item-1",
+                        "description": "description-1",
+                        "available": true,
+                        "requestId": 123
+                    }
+                """;
 
-        RequestItemDto requestItemDto = objectMapper.readValue(jsonString, RequestItemDto.class);
+        var result = json.parse(jsonContent);
 
-        assertThat(requestItemDto.getName()).isEqualTo("Item Name");
-        assertThat(requestItemDto.getDescription()).isEqualTo("Description");
-        assertThat(requestItemDto.getAvailable()).isTrue();
-        assertThat(requestItemDto.getRequestId()).isEqualTo(1L);
+        assertThat(result.getObject().getName()).isEqualTo("item-1");
+        assertThat(result.getObject().getDescription()).isEqualTo("description-1");
+        assertThat(result.getObject().getAvailable()).isEqualTo(true);
+        assertThat(result.getObject().getRequestId()).isEqualTo(123L);
     }
 }

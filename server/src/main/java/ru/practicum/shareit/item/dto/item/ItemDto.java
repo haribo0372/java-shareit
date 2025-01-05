@@ -2,17 +2,15 @@ package ru.practicum.shareit.item.dto.item;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import ru.practicum.shareit.item.dto.comment.CommentDto;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemDto {

@@ -1,42 +1,53 @@
 package ru.practicum.shareit.dto;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.json.JacksonTester;
 import ru.practicum.shareit.booking.dto.RequestCreateBookingDto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JsonTest
-@AutoConfigureMockMvc
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class RequestCreateBookingDtoTest {
-    private final ObjectMapper objectMapper;
+
+    @Autowired
+    private JacksonTester<RequestCreateBookingDto> json;
 
     @Test
-    void testSerialization() throws Exception {
-        LocalDateTime start = LocalDateTime.of(2023, 10, 1, 10, 0);
-        LocalDateTime end = LocalDateTime.of(2023, 10, 2, 10, 0);
-        RequestCreateBookingDto requestCreateBookingDto = new RequestCreateBookingDto(1L, start, end);
+    void testSerialize() throws Exception {
+        var dto = new RequestCreateBookingDto(1L, LocalDateTime.of(2023, 1, 1, 12, 0), LocalDateTime.of(2023, 1, 2, 12, 0));
 
-        String jsonString = objectMapper.writeValueAsString(requestCreateBookingDto);
+        var result = json.write(dto);
 
-        assertThat(jsonString).contains("1", start.toString(), end.toString());
+        assertThat(result).hasJsonPath("$.itemId");
+        assertThat(result).hasJsonPath("$.start");
+        assertThat(result).hasJsonPath("$.end");
+        assertThat(result).extractingJsonPathNumberValue("$.itemId").isEqualTo(dto.getItemId().intValue());
+        assertThat(result).extractingJsonPathStringValue("$.start")
+                .isEqualTo(dto.getStart().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        assertThat(result).extractingJsonPathStringValue("$.end")
+                .isEqualTo(dto.getEnd().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
     }
 
     @Test
-    void testDeserialization() throws Exception {
-        String jsonString = "{\"itemId\":1,\"start\":\"2023-10-01T10:00:00\",\"end\":\"2023-10-02T10:00:00\"}";
+    void testDeserialize() throws Exception {
+        var jsonContent = """
+                    {
+                        "itemId": 123,
+                        "start": "2023-01-01T12:00:00",
+                        "end": "2023-01-02T12:00:00"
+                    }
+                """;
 
-        RequestCreateBookingDto requestCreateBookingDto = objectMapper.readValue(jsonString, RequestCreateBookingDto.class);
+        var result = json.parse(jsonContent);
 
-        assertThat(requestCreateBookingDto.getItemId()).isEqualTo(1L);
-        assertThat(requestCreateBookingDto.getStart()).isEqualTo(LocalDateTime.of(2023, 10, 1, 10, 0));
-        assertThat(requestCreateBookingDto.getEnd()).isEqualTo(LocalDateTime.of(2023, 10, 2, 10, 0));
+        assertThat(result.getObject().getItemId()).isEqualTo(123L);
+        assertThat(result.getObject().getStart()).isEqualTo(LocalDateTime.of(2023, 1, 1, 12, 0));
+        assertThat(result.getObject().getEnd()).isEqualTo(LocalDateTime.of(2023, 1, 2, 12, 0));
     }
 }
+

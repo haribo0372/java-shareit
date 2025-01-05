@@ -1,34 +1,45 @@
 package ru.practicum.shareit.dto;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.json.JacksonTester;
 import ru.practicum.shareit.user.dto.RequestUserDto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JsonTest
-@AutoConfigureMockMvc
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class RequestUserDtoTest {
-    private final ObjectMapper objectMapper;
+
+    @Autowired
+    private JacksonTester<RequestUserDto> json;
 
     @Test
-    void testSerialization() throws Exception {
-        RequestUserDto requestUserDto = new RequestUserDto("John Doe", "john.doe@example.com");
-        String jsonString = objectMapper.writeValueAsString(requestUserDto);
-        assertThat(jsonString).contains("John Doe");
-        assertThat(jsonString).contains("john.doe@example.com");
+    void testSerialize() throws Exception {
+        var dto = new RequestUserDto("name-1", "email1@example.com");
+
+        var result = json.write(dto);
+
+        assertThat(result).hasJsonPath("$.name");
+        assertThat(result).hasJsonPath("$.email");
+
+        assertThat(result).extractingJsonPathStringValue("$.name").isEqualTo(dto.getName());
+        assertThat(result).extractingJsonPathStringValue("$.email").isEqualTo(dto.getEmail());
     }
 
     @Test
-    void testDeserialization() throws Exception {
-        String jsonString = "{\"name\":\"John Doe\", \"email\":\"john.doe@example.com\"}";
-        RequestUserDto requestUserDto = objectMapper.readValue(jsonString, RequestUserDto.class);
-        assertThat(requestUserDto.getName()).isEqualTo("John Doe");
-        assertThat(requestUserDto.getEmail()).isEqualTo("john.doe@example.com");
+    void testDeserialize() throws Exception {
+        var jsonContent = """
+                    {
+                        "name": "name-1",
+                        "email": "email1@example.com"
+                    }
+                """;
+
+        var result = json.parse(jsonContent);
+
+        assertThat(result.getObject().getName()).isEqualTo("name-1");
+        assertThat(result.getObject().getEmail()).isEqualTo("email1@example.com");
     }
 }
+
