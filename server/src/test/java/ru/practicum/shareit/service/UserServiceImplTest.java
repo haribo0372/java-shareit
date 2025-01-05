@@ -15,7 +15,10 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -55,15 +58,98 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void update_userShouldBeUpdated() {
-        User storageUser = userRepository.save(new User(null, "User-2", "user2@gmail.com"));
-        userService.update(storageUser.getId(), requestUserDto);
+    public void update_nameAndEmailOfUserShouldBeUpdated() {
+        String name = "User-1212-GGQC-1032";
+        String email = "user1212@gmail.com";
 
-        User updated = userRepository.findById(storageUser.getId()).get();
+        Long rootId = userRepository.save(new User(null, name, email)).getId();
+
+        userService.update(rootId, requestUserDto);
+
+        User updated = userRepository.findById(rootId).get();
         assertThat(updated).isNotNull();
-        assertThat(updated.getId()).isEqualTo(storageUser.getId());
-        assertThat(updated.getName()).isEqualTo(storageUser.getName());
-        assertThat(updated.getEmail()).isEqualTo(storageUser.getEmail());
+        assertThat(updated.getId()).isEqualTo(rootId);
+        assertThat(updated.getName()).isEqualTo(requestUserDto.getName());
+        assertThat(updated.getEmail()).isEqualTo(requestUserDto.getEmail());
+        assertThat(updated.getName()).isNotEqualTo(name);
+        assertThat(updated.getEmail()).isNotEqualTo(email);
+    }
+
+    @Test
+    public void update_onlyEmailOfUserShouldBeUpdatedWhereNameIsNull() {
+        String name = "User-1";
+        String email = "user1@gmail.com";
+
+        Long rootId = userRepository.save(new User(null, name, email)).getId();
+        requestUserDto.setName(null);
+        userService.update(rootId, requestUserDto);
+        User updated = userRepository.findById(rootId).get();
+        assertThat(updated).isNotNull();
+        assertThat(updated.getId()).isEqualTo(rootId);
+        assertThat(updated.getName()).isEqualTo(name);
+        assertThat(updated.getEmail()).isNotEqualTo(email);
+        assertThat(updated.getEmail()).isEqualTo(requestUserDto.getEmail());
+    }
+
+    @Test
+    public void update_onlyEmailOfUserShouldBeUpdatedWhereNameIsBlank() {
+        String name = "User-1";
+        String email = "user1@gmail.com";
+
+        Long rootId = userRepository.save(new User(null, name, email)).getId();
+        requestUserDto.setName("        ");
+        userService.update(rootId, requestUserDto);
+        User updated = userRepository.findById(rootId).get();
+        assertThat(updated).isNotNull();
+        assertThat(updated.getId()).isEqualTo(rootId);
+        assertThat(updated.getName()).isEqualTo(name);
+        assertThat(updated.getEmail()).isNotEqualTo(email);
+        assertThat(updated.getEmail()).isEqualTo(requestUserDto.getEmail());
+    }
+
+    @Test
+    public void update_onlyEmailShouldBeThrowUserEmailIsNotUnique() {
+        String name = "User-1";
+        String email = requestUserDto.getEmail();
+
+        Long rootId = userRepository.save(new User(null, name, email)).getId();
+        requestUserDto.setName(null);
+        assertThatThrownBy(() -> userService.update(rootId, requestUserDto))
+                .isInstanceOf(UserEmailIsNotUnique.class);
+    }
+
+    @Test
+    public void update_onlyNameOfUserShouldBeUpdatedWhereEmailIsNull() {
+        String name = "NAME FOR TEST";
+        String email = "mail_for_test@gmail.com";
+
+        Long rootId = userRepository.save(new User(null, name, email)).getId();
+        requestUserDto.setEmail(null);
+        userService.update(rootId, requestUserDto);
+
+        User updated = userRepository.findById(rootId).get();
+        assertThat(updated).isNotNull();
+        assertThat(updated.getId()).isEqualTo(rootId);
+        assertThat(updated.getName()).isNotEqualTo(name);
+        assertThat(updated.getName()).isEqualTo(requestUserDto.getName());
+        assertThat(updated.getEmail()).isEqualTo(email);
+    }
+
+    @Test
+    public void update_onlyNameOfUserShouldBeUpdatedWhereEmailIsBlank() {
+        String name = "NAME FOR TEST";
+        String email = "mail_for_test@gmail.com";
+
+        Long rootId = userRepository.save(new User(null, name, email)).getId();
+        requestUserDto.setEmail("        ");
+        userService.update(rootId, requestUserDto);
+
+        User updated = userRepository.findById(rootId).get();
+        assertThat(updated).isNotNull();
+        assertThat(updated.getId()).isEqualTo(rootId);
+        assertThat(updated.getName()).isNotEqualTo(name);
+        assertThat(updated.getName()).isEqualTo(requestUserDto.getName());
+        assertThat(updated.getEmail()).isEqualTo(email);
     }
 
     @Test
@@ -98,6 +184,54 @@ public class UserServiceImplTest {
     public void findUserById_shouldThrowNotFoundException() {
         assertThatThrownBy(() -> userService.findUserById(999L))
                 .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    public void findById_shouldReturnUser() {
+        User user = new User(null, "User-1", "user1@gmail.com");
+        Long userId = userRepository.save(user).getId();
+        User foundUser = userService.findById(userId);
+
+        assertThat(foundUser).isNotNull();
+        assertThat(foundUser.getId()).isEqualTo(userId);
+        assertThat(foundUser.getName()).isEqualTo(user.getName());
+        assertThat(foundUser.getEmail()).isEqualTo(user.getEmail());
+    }
+
+    @Test
+    public void findById_shouldThrowNotFoundException() {
+        assertThatThrownBy(() -> userService.findById(999L))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    public void deleteById_userShouldBeDeleted() {
+        User user = new User(null, "User-1", "user1@gmail.com");
+        Long userId = userRepository.save(user).getId();
+        assertThat(userRepository.findById(userId).isPresent()).isTrue();
+
+        assertDoesNotThrow(() -> userService.deleteById(userId));
+        assertThat(userRepository.findById(userId).isPresent()).isFalse();
+    }
+
+    @Test
+    public void deleteById_shouldThrowNotFoundException() {
+        assertThatThrownBy(() -> userService.deleteById(999L))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    public void findAll_shouldReturnUser() {
+        Set<Long> expectedIds = new HashSet<>();
+        expectedIds.add(userRepository.save(new User(null, "User-1", "user1@gmail.com")).getId());
+        expectedIds.add(userRepository.save(new User(null, "User-2", "user2@gmail.com")).getId());
+
+        Collection<User> users = userService.findAll();
+
+        assertThat(users).isNotNull();
+        assertThat(users).isNotEmpty();
+        assertThat(users.size()).isEqualTo(expectedIds.size());
+        assertThat(users.stream().map(User::getId).collect(Collectors.toSet())).isEqualTo(expectedIds);
     }
 
     @Test

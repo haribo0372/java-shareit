@@ -28,7 +28,7 @@ public class ItemRequestServiceImpl extends BaseInDbService<ItemRequest, ItemReq
     @Autowired
     public ItemRequestServiceImpl(ItemRequestRepository repository,
                                   UserService userService, ItemRepository itemRepository) {
-        super(repository, ItemRequest.class);
+        super(repository, "ItemRequest");
         this.userService = userService;
         this.itemRepository = itemRepository;
     }

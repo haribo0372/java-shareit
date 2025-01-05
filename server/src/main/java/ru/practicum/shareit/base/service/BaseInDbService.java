@@ -13,17 +13,16 @@ import static java.lang.String.format;
 public abstract class BaseInDbService<T extends BaseModel<Long>, R extends JpaRepository<T, Long>>
         implements BaseService<T, Long> {
     protected final R repository;
-    private final String entityName;
+    private final String entityNameForLog;
 
-    public BaseInDbService(R repository, Class<T> type) {
+    public BaseInDbService(R repository, String entityNameForLog) {
         this.repository = repository;
-        String[] strings = type.getName().split("\\.");
-        entityName = strings.length != 0 ? strings[strings.length - 1] : "";
+        this.entityNameForLog = entityNameForLog;
     }
 
     @Override
     public Collection<T> findAll() {
-        log.debug("Все {} возврашены", entityName);
+        log.debug("Все {} возврашены", entityNameForLog);
         return repository.findAll();
     }
 
@@ -31,7 +30,7 @@ public abstract class BaseInDbService<T extends BaseModel<Long>, R extends JpaRe
     public T findById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() ->
-                        new NotFoundException(format("%s по id=%s не найден", entityName, id)));
+                        new NotFoundException(format("%s по id=%s не найден", entityNameForLog, id)));
     }
 
     protected T save(T entity) {
@@ -42,6 +41,6 @@ public abstract class BaseInDbService<T extends BaseModel<Long>, R extends JpaRe
     public void deleteById(Long id) {
         findById(id);
         repository.deleteById(id);
-        log.info("{}{id={}} успешно удален", entityName, id);
+        log.info("{}{id={}} успешно удален", entityNameForLog, id);
     }
 }

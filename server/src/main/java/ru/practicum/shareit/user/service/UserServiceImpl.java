@@ -23,7 +23,7 @@ public class UserServiceImpl extends BaseInDbService<User, UserRepository> imple
 
     @Autowired
     public UserServiceImpl(UserRepository repository) {
-        super(repository, User.class);
+        super(repository, "User");
     }
 
     @Override

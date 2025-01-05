@@ -37,7 +37,7 @@ public class ItemServiceImpl extends BaseInDbService<Item, ItemRepository> imple
     @Autowired
     protected ItemServiceImpl(ItemRepository repository,
                               UserService userService, ItemRequestService requestService, CommentRepository commentRepository, BookingRepository bookingRepository) {
-        super(repository, Item.class);
+        super(repository, "Item");
         this.userService = userService;
         this.requestService = requestService;
         this.commentRepository = commentRepository;

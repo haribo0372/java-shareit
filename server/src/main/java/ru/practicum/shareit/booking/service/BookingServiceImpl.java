@@ -31,7 +31,7 @@ public class BookingServiceImpl extends BaseInDbService<Booking, BookingReposito
 
     @Autowired
     public BookingServiceImpl(BookingRepository repository, ItemService itemService, UserService userService) {
-        super(repository, Booking.class);
+        super(repository, "Booking");
         this.itemService = itemService;
         this.userService = userService;
     }
@@ -98,8 +98,7 @@ public class BookingServiceImpl extends BaseInDbService<Booking, BookingReposito
             case FUTURE -> result = repository.findAllByBookerIdAndStartDateTimeIsAfter(userId, LocalDateTime.now());
             case PAST -> result = repository.findAllByBookerIdAndEndDateTimeIsBefore(userId, LocalDateTime.now());
             case WAITING -> result = repository.findAllByBookerIdAndStatusEquals(userId, BookerStatus.WAITING);
-            case REJECTED -> result = repository.findAllByBookerIdAndStatusEquals(userId, BookerStatus.REJECTED);
-            default -> throw new ValidationException(format("Переданный параметр state=%s не поддерживается", state));
+            default -> result = repository.findAllByBookerIdAndStatusEquals(userId, BookerStatus.REJECTED);
         }
 
         return this.toDto(result);
@@ -120,8 +119,7 @@ public class BookingServiceImpl extends BaseInDbService<Booking, BookingReposito
             case FUTURE -> result = repository.findAllByItemOwnerIdAndStartDateTimeIsAfter(userId, LocalDateTime.now());
             case PAST -> result = repository.findAllByItemOwnerIdAndEndDateTimeIsBefore(userId, LocalDateTime.now());
             case WAITING -> result = repository.findAllByItemOwnerIdAndStatusEquals(userId, BookerStatus.WAITING);
-            case REJECTED -> result = repository.findAllByItemOwnerIdAndStatusEquals(userId, BookerStatus.REJECTED);
-            default -> throw new ValidationException(format("Переданный параметр state=%s не поддерживается", state));
+            default -> result = repository.findAllByItemOwnerIdAndStatusEquals(userId, BookerStatus.REJECTED);
         }
         return this.toDto(result);
     }
