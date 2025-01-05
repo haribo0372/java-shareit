@@ -35,13 +35,7 @@ public class RequestCreateBookingDtoTest {
 
     @Test
     void testDeserialize() throws Exception {
-        var jsonContent = """
-                    {
-                        "itemId": 123,
-                        "start": "2023-01-01T12:00:00",
-                        "end": "2023-01-02T12:00:00"
-                    }
-                """;
+        var jsonContent = "{\"itemId\": 123, \"start\": \"2023-01-01T12:00:00\", \"end\": \"2023-01-02T12:00:00\"}";
 
         var result = json.parse(jsonContent);
 

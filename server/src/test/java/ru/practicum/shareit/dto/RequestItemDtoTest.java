@@ -32,14 +32,7 @@ public class RequestItemDtoTest {
 
     @Test
     void testDeserialize() throws Exception {
-        var jsonContent = """
-                    {
-                        "name": "item-1",
-                        "description": "description-1",
-                        "available": true,
-                        "requestId": 123
-                    }
-                """;
+        var jsonContent = "{\"name\": \"item-1\", \"description\": \"description-1\", \"available\": true, \"requestId\": 123}";
 
         var result = json.parse(jsonContent);
 

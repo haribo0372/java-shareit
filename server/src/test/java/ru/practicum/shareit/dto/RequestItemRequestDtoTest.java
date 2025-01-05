@@ -26,11 +26,7 @@ public class RequestItemRequestDtoTest {
 
     @Test
     void testDeserialize() throws Exception {
-        var jsonContent = """
-                    {
-                        "description": "description-1"
-                    }
-                """;
+        var jsonContent = "{\"description\": \"description-1\"}";
 
         var result = json.parse(jsonContent);
 

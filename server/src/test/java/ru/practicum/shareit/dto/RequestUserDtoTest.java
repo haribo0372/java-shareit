@@ -29,12 +29,7 @@ public class RequestUserDtoTest {
 
     @Test
     void testDeserialize() throws Exception {
-        var jsonContent = """
-                    {
-                        "name": "name-1",
-                        "email": "email1@example.com"
-                    }
-                """;
+        var jsonContent = "{\"name\": \"name-1\", \"email\": \"email1@example.com\"}";
 
         var result = json.parse(jsonContent);
 
